@@ -2,6 +2,7 @@ import path from 'path';
 import url from 'url';
 import express from 'express';
 import hbs from 'hbs';
+import app3 from './weatherstack_api/app3.js';
 
 const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -52,10 +53,25 @@ app.get('/help', (req, res) => {
 });
 
 app.get('/weather', (req, res) => {
-  res.send({
-    forcast: 'cloudy',
-    location: 'hawaii',
-  });
+  /* API Utils */
+  const userQuery = req.query.query;
+  let units = req.query.units;
+
+  if (!units) {
+    units = 'm';
+  }
+
+  if (!userQuery) {
+    return res.send({ Error: 'please enter place name!' });
+  } else {
+    app3.getWeatherData(userQuery, units, (error, data = {}) => {
+      if (error) {
+        res.send({ Error: error });
+      } else {
+        res.send({ Address: userQuery, Forcast: data });
+      }
+    });
+  }
 });
 
 app.get('/help/{*splat}', (req, res) => {
